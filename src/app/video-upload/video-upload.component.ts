@@ -1,9 +1,9 @@
-import { Component } from '@angular/core';
+import {Component, inject} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { FileServerApi } from '../services/file.service';
-import { HttpResponse } from '@angular/common/http';
+import { DocumentService } from '../Api/FileServer'
 import {Subscription} from 'rxjs';
+
 
 @Component({
   selector: 'app-video-upload',
@@ -24,7 +24,9 @@ export class VideoUploadComponent {
   uploadStatus = '';
   private uploadSubscription: Subscription | null = null;
 
-  constructor(private fileClient: FileServerApi.FileServerClient) {}
+  private documentService = inject(DocumentService);
+
+  constructor() {}
 
   ngOnDestroy() {
     if (this.uploadSubscription) {
@@ -41,32 +43,28 @@ export class VideoUploadComponent {
   upload() {
     if (!this.selectedFile) return;
 
-    const formData = new FormData();
     const now = new Date();
-
-    // Add required parameters
-    formData.append('classificationId', '1'); // Add appropriate classification ID
-    formData.append('mediaType', 'Document'); // Add appropriate media type
-    formData.append('createdDate', now.toJSON());
-    formData.append('updatedDate', now.toJSON());
-    formData.append('fileData', this.selectedFile, this.selectedFile.name);
-
     this.uploadStatus = '📤 Hochladen...';
 
-    // Store subscription for cleanup
-    this.uploadSubscription = this.fileClient.documentPOST(
+    const fileData = [{
+      data: this.selectedFile,
+      fileName: this.selectedFile.name
+    }];
+
+    // @ts-ignore
+    this.uploadSubscription = this.documentService.postApiDocument(
       1, // classificationId
-      null, // guid
-      this.selectedFile.name, // originalName
-      1, // mediaType
-      now, // createdDate
-      now, // updatedDate
-      null, // createdBy
+      null,
+      this.selectedFile.name,
+      1, // mediaType (z. B. Document = 1?)
+      now.toISOString(),
+      now.toISOString(),
+      "Lenin", // createdBy
       null, // language
       null, // version
       null, // metaData
       null, // pageNumbers
-      [{ data: this.selectedFile, fileName: this.selectedFile.name }] // fileData
+      fileData
     ).subscribe({
       next: () => this.uploadStatus = '✅ Upload erfolgreich!',
       error: (err: any) => {
@@ -75,4 +73,6 @@ export class VideoUploadComponent {
       }
     });
   }
+
+
 }
