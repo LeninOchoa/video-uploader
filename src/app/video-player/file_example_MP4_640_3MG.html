@@ -1,0 +1,377 @@
+﻿
+<div class="video-player-container">
+    <!-- First player section -->
+    <div class="player-section">
+        <div class="player-controls">
+            <h3 class="player-title">Standard Video Player</h3>
+            <div class="control-buttons">
+                <button id="playPauseBtn1" class="control-btn" onclick="players.togglePlayPause('player1')">
+                    <span class="btn-text">Pause</span>
+                </button>
+                <button id="stopBtn1" class="control-btn" onclick="players.stopVideo('player1')">
+                    Stop
+                </button>
+                <button id="statBtn1" class="control-btn" onclick="players.showStats('player1')">
+                    Statistik
+                </button>
+                <button id="deleteBtn1" class="control-btn delete-btn" onclick="players.deleteVideo('player1')">
+                    Löschen
+                </button>
+            </div>
+            <div id="statsPanel1" class="stats-panel"></div>
+            <div id="statusMessage1" class="status-message"></div>
+        </div>
+
+        <video id="player1"
+               class="video-player"
+               controls
+               autoplay
+               src="http://192.168.10.235:5210/api/file/stream/document/1"
+               data-session-id=""
+               data-player-id="player1"
+               onloadedmetadata="players.initializeVideo('player1')"
+               onerror="players.handleError('player1')">
+        </video>
+    </div>
+
+    <!-- Second player section -->
+    <div class="player-section">
+        <div class="player-controls">
+            <h3 class="player-title">Video Player (Start bei 15 Sekunden)</h3>
+            <div class="control-buttons">
+                <button id="playPauseBtn2" class="control-btn" onclick="players.togglePlayPause('player2')">
+                    <span class="btn-text">Pause</span>
+                </button>
+                <button id="stopBtn2" class="control-btn" onclick="players.stopVideo('player2')">
+                    Stop
+                </button>
+                <button id="statBtn2" class="control-btn" onclick="players.showStats('player2')">
+                    Statistik
+                </button>
+                <button id="deleteBtn2" class="control-btn delete-btn" onclick="players.deleteVideo('player2')">
+                    Löschen
+                </button>
+            </div>
+            <div id="statsPanel2" class="stats-panel"></div>
+            <div id="statusMessage2" class="status-message"></div>
+        </div>
+
+        <video id="player2"
+               class="video-player"
+               controls
+               autoplay
+               src="http://192.168.10.235:5210/api/file/stream/document/1?startSecond=15"
+               data-session-id=""
+               data-player-id="player2"
+               data-start-time="15"
+               onloadedmetadata="players.initializeVideo('player2')"
+               onerror="players.handleError('player2')">
+        </video>
+    </div>
+</div>
+
+<script>
+    const players = {
+        instances: {},
+        baseApiUrl: 'http://192.168.10.235:5210/api/file/stream',
+
+        async initializeVideo(playerId) {
+            const video = document.getElementById(playerId);
+            const startTime = video.dataset.startTime;
+
+            try {
+                // Hole die Session-ID bevor wir die Instanz initialisieren
+                const sessionId = await this.getSessionIdFromHeaders(video);
+
+                this.instances[playerId] = {
+                    video: video,
+                    sessionId: sessionId
+                };
+
+                if (startTime) {
+                    video.currentTime = parseInt(startTime);
+                }
+
+                this.showStatus(playerId, 'Video initialisiert, Session-ID: ' + sessionId);
+            } catch (error) {
+                this.showStatus(playerId, 'Fehler bei der Initialisierung: ' + error.message, true);
+            }
+        },
+
+        async getSessionIdFromHeaders(video) {
+            try {
+                const response = await fetch(video.src, {
+                    method: 'GET',
+                    headers: {
+                        'Range': 'bytes=0-0' // Nur den Header anfordern
+                    }
+                });
+                console.log("getSessionIdFromHeaders: ", response);
+                const sessionId = response.headers.get('X-Session-Id');
+                if (sessionId) {
+                    video.dataset.sessionId = sessionId;
+                    return sessionId;
+                }
+                throw new Error('Keine Session-ID im Response-Header gefunden');
+            } catch (error) {
+                console.error('Fehler beim Abrufen der Session-ID:', error);
+                throw error;
+            }
+        },
+
+        async togglePlayPause(playerId) {
+            const instance = this.instances[playerId];
+            if (!instance) {
+                this.showStatus(playerId, 'Video noch nicht initialisiert', true);
+                return;
+            }
+
+            const btn = document.getElementById(`playPauseBtn${playerId.slice(-1)}`);
+
+            try {
+                if (instance.video.paused) {
+                    await this.resumePlayback(playerId);
+                    btn.querySelector('.btn-text').textContent = 'Pause';
+                } else {
+                    await this.pausePlayback(playerId);
+                    btn.querySelector('.btn-text').textContent = 'Fortsetzen';
+                }
+            } catch (error) {
+                this.showStatus(playerId, 'Fehler bei der Wiedergabesteuerung: ' + error.message, true);
+            }
+        },
+
+        async pausePlayback(playerId) {
+            const instance = this.instances[playerId];
+            if (!instance || !instance.sessionId) {
+                throw new Error('Keine gültige Session gefunden');
+            }
+
+            try {
+                const response = await fetch(`${this.baseApiUrl}/${instance.sessionId}/pause`, {
+                    method: 'POST'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}`);
+                }
+
+                instance.video.pause();
+                this.showStatus(playerId, 'Video pausiert');
+            } catch (error) {
+                throw new Error('Fehler beim Pausieren: ' + error.message);
+            }
+        },
+
+        async resumePlayback(playerId) {
+            const instance = this.instances[playerId];
+            if (!instance || !instance.sessionId) {
+                throw new Error('Keine gültige Session gefunden');
+            }
+
+            try {
+                const response = await fetch(`${this.baseApiUrl}/${instance.sessionId}/resume`, {
+                    method: 'POST'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}`);
+                }
+
+                await instance.video.play();
+                this.showStatus(playerId, 'Wiedergabe fortgesetzt');
+            } catch (error) {
+                throw new Error('Fehler beim Fortsetzen: ' + error.message);
+            }
+        },
+
+        async stopVideo(playerId) {
+            const instance = this.instances[playerId];
+            if (!instance || !instance.sessionId) {
+                this.showStatus(playerId, 'Keine gültige Session gefunden', true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${this.baseApiUrl}/${instance.sessionId}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}`);
+                }
+
+                instance.video.pause();
+                instance.video.currentTime = instance.video.dataset.startTime || 0;
+                this.showStatus(playerId, 'Video gestoppt');
+            } catch (error) {
+                this.showStatus(playerId, 'Fehler beim Stoppen: ' + error.message, true);
+            }
+        },
+
+        showStats(playerId) {
+            const instance = this.instances[playerId];
+            if (!instance) {
+                this.showStatus(playerId, 'Video noch nicht initialisiert', true);
+                return;
+            }
+
+            const statsPanel = document.getElementById(`statsPanel${playerId.slice(-1)}`);
+
+            const stats = {
+                sessionId: instance.sessionId,
+                duration: instance.video.duration.toFixed(2),
+                currentTime: instance.video.currentTime.toFixed(2),
+                playbackRate: instance.video.playbackRate,
+                volume: Math.round(instance.video.volume * 100),
+                buffered: instance.video.buffered.length ?
+                    instance.video.buffered.end(instance.video.buffered.length - 1).toFixed(2) : 0
+            };
+
+            statsPanel.innerHTML = `
+                <p>Session-ID: ${stats.sessionId}</p>
+                <p>Gesamtlänge: ${stats.duration}s</p>
+                <p>Aktuelle Position: ${stats.currentTime}s</p>
+                <p>Wiedergabegeschwindigkeit: ${stats.playbackRate}x</p>
+                <p>Lautstärke: ${stats.volume}%</p>
+                <p>Gepuffert: ${stats.buffered}s</p>
+            `;
+
+            statsPanel.style.display = statsPanel.style.display === 'none' ? 'block' : 'none';
+        },
+
+        async deleteVideo(playerId) {
+            const instance = this.instances[playerId];
+            if (!instance || !instance.sessionId) {
+                this.showStatus(playerId, 'Keine gültige Session gefunden', true);
+                return;
+            }
+
+            if (!confirm('Möchten Sie dieses Video wirklich löschen?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${this.baseApiUrl}/${instance.sessionId}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}`);
+                }
+
+                instance.video.pause();
+                instance.video.src = '';
+                instance.video.load();
+
+                const buttons = document.querySelectorAll(`#${playerId}-controls button`);
+                buttons.forEach(btn => btn.disabled = true);
+
+                delete this.instances[playerId];
+                this.showStatus(playerId, 'Stream wurde beendet und Video gelöscht');
+            } catch (error) {
+                this.showStatus(playerId, 'Fehler beim Löschen: ' + error.message, true);
+            }
+        },
+
+        showStatus(playerId, message, isError = false) {
+            const statusElement = document.getElementById(`statusMessage${playerId.slice(-1)}`);
+            statusElement.textContent = message;
+            statusElement.className = `status-message ${isError ? 'error' : 'success'}`;
+        },
+
+        handleError(playerId) {
+            this.showStatus(playerId, 'Fehler bei der Videowiedergabe', true);
+        }
+    };
+</script>
+
+<style>
+    .video-player-container {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 1rem;
+    }
+
+    .player-section {
+        border: 1px solid #ddd;
+        padding: 1rem;
+        border-radius: 8px;
+    }
+
+    .player-controls {
+        margin-bottom: 1rem;
+    }
+
+    .player-title {
+        margin: 0 0 1rem 0;
+        color: #333;
+    }
+
+    .control-buttons {
+        display: flex;
+        gap: 1rem;
+        margin: 1rem 0;
+    }
+
+    .control-btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        background-color: #007bff;
+        color: white;
+        transition: background-color 0.2s;
+    }
+
+    .control-btn:hover {
+        background-color: #0056b3;
+    }
+
+    .delete-btn {
+        background-color: #dc3545;
+    }
+
+    .delete-btn:hover {
+        background-color: #c82333;
+    }
+
+    .stats-panel {
+        margin-top: 1rem;
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        display: none;
+    }
+
+    .video-player {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 4px;
+    }
+
+    .status-message {
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+    }
+
+    .status-message.error {
+        background-color: #ff4444;
+        color: white;
+    }
+
+    .status-message.success {
+        background-color: #00C851;
+        color: white;
+    }
+
+    .control-btn:disabled {
+        background-color: #6c757d;
+        cursor: not-allowed;
+    }
+</style>
