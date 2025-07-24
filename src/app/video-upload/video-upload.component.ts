@@ -49,7 +49,7 @@ export class VideoUploadComponent {
       classificationId: 1,
       guid: null,
       originalName: this.selectedFile.name,
-      mediaType: 2, // 2 = Document laut enum "MediaType"
+      mediaType: 1, // 2 = Document laut enum "MediaType"
       createdDate: now.toISOString(),
       updatedDate: now.toISOString(),
       createdBy: 'Lenin',
