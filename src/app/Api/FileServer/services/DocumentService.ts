@@ -71,28 +71,13 @@ export class DocumentService {
         });
     }
     /**
-     * @param p0
-     * @param p1
-     * @param name
-     * @param p2
-     * @param p3
-     * @param p4
-     * @param p5
-     * @param p6
-     * @param p7
-     * @param p8
-     * @param p9
-     * @param fileData
      * @param formData
      * @returns any OK
      * @returns IDocument Created
      * @throws ApiError
      */
     public postApiDocument(
-      p0: number, p1: null, name: string, p2: number, p3: string, p4: string, p5: null, p6: null, p7: null, p8: null, p9: null, fileData: {
-        data: File;
-        fileName: string;
-      }[], formData: TransferDto,
+        formData: TransferDto,
     ): Observable<any | IDocument> {
         return __request(OpenAPI, this.http, {
             method: 'POST',

@@ -1,7 +1,7 @@
 import {Component, inject} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DocumentService } from '../Api/FileServer'
+import {DocumentService, TransferDto} from '../Api/FileServer'
 import {Subscription} from 'rxjs';
 
 
@@ -44,28 +44,25 @@ export class VideoUploadComponent {
     if (!this.selectedFile) return;
 
     const now = new Date();
+
+    const formData: TransferDto = {
+      classificationId: 1,
+      guid: null,
+      originalName: this.selectedFile.name,
+      mediaType: 2, // 2 = Document laut enum "MediaType"
+      createdDate: now.toISOString(),
+      updatedDate: now.toISOString(),
+      createdBy: 'Lenin',
+      language: null,
+      version: null,
+      metaData: null,
+      pageNumbers: null,
+      fileData: [this.selectedFile]
+    };
+
     this.uploadStatus = '📤 Hochladen...';
 
-    const fileData = [{
-      data: this.selectedFile,
-      fileName: this.selectedFile.name
-    }];
-
-    // @ts-ignore
-    this.uploadSubscription = this.documentService.postApiDocument(
-      1, // classificationId
-      null,
-      this.selectedFile.name,
-      1, // mediaType (z. B. Document = 1?)
-      now.toISOString(),
-      now.toISOString(),
-      "Lenin", // createdBy
-      null, // language
-      null, // version
-      null, // metaData
-      null, // pageNumbers
-      fileData
-    ).subscribe({
+    this.uploadSubscription = this.documentService.postApiDocument(formData).subscribe({
       next: () => this.uploadStatus = '✅ Upload erfolgreich!',
       error: (err: any) => {
         console.error('Upload error:', err);

@@ -3,10 +3,7 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import { appConfig } from './app/app.config';
 import { App } from './app/app';
 import { KeycloakService } from './app/services/keycloak.service';
-import {InjectionToken} from '@angular/core';
-
-// Define API_BASE_URL token
-export const API_BASE_URL = new InjectionToken<string>('API_BASE_URL');
+import {OpenAPI} from './app/Api/FileServer';
 
 
 // Keycloak vorbereiten
@@ -22,7 +19,8 @@ keycloak.init({
     providers: [
       ...(appConfig.providers || []),
       { provide: KeycloakService, useValue: keycloak },
-      { provide: API_BASE_URL, useValue: 'https://app-test.rehaneo.synios.local' }
     ]
+  }).then(() => {
+    OpenAPI.BASE = 'https://app-test.rehaneo.synios.local/rehaportal';
   }).catch(err => console.error(err));
 });
