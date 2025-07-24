@@ -309,7 +309,7 @@ export module FileServerApi {
       if(this.baseUrl.length === 0)
       {
         url_ = "https://app-test.rehaneo.synios.local/rehaportal/api/document"; //mit Token
-        //url_ = "http://192.168.10.145:5210/api/document";
+        //url_ = "http://192.168.10.145:5200/api/document";
       }
 console.log('url: ', url_);
       const content_ = new FormData();

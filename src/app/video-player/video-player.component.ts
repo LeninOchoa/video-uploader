@@ -18,6 +18,8 @@ export class VideoPlayerComponent implements AfterViewInit {
   }
 
   playerScript(): string {
+    return "";
+    /*
     return `const players = {
         instances: {},
         baseApiUrl: 'http://192.168.10.235:5210/api/file/stream',
@@ -230,7 +232,7 @@ export class VideoPlayerComponent implements AfterViewInit {
         handleError(playerId) {
             this.showStatus(playerId, 'Fehler bei der Videowiedergabe', true);
         }
-    };`;
+    };`; */
   }
 }
 
