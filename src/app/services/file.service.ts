@@ -306,6 +306,12 @@ export module FileServerApi {
       let url_ = this.baseUrl + "/api/document";
       url_ = url_.replace(/[?&]$/, "");
 
+      if(this.baseUrl.length === 0)
+      {
+        url_ = "https://app-test.rehaneo.synios.local/rehaportal/api/document"; //mit Token
+        //url_ = "http://192.168.10.145:5200/api/document";
+      }
+console.log('url: ', url_);
       const content_ = new FormData();
       if (classificationId === null || classificationId === undefined)
         throw new Error("The parameter 'classificationId' cannot be null.");

@@ -21,4 +21,9 @@ export class KeycloakService {
   getKeycloakInstance() {
     return this.keycloak;
   }
+
+  logout(redirectUri: string = window.location.origin) {
+    this.keycloak.logout({ redirectUri });
+  }
+
 }
