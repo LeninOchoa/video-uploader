@@ -4,42 +4,19 @@
     [id]="'video-' + documentId"
     width="640"
     controls
-    (error)="handleError('video1')"
-    (loadedmetadata)="initializeVideo(documentId)"
+    (error)="handleError('video-' + documentId)"
+    src="https://app-test.rehaneo.synios.local/rehaportal/api/file/stream/document/10"
   ></video>
 
   <div class="controls">
-    <button id="playPauseBtn1" (click)="togglePlayPause('video1')">
+    <button [id]="'playPauseBtn' + documentId" (click)="togglePlayPause('video-' + documentId)">
       ▶️ <span class="btn-text">Abspielen</span>
     </button>
-    <button (click)="stopVideo('video1')">⏹️ Stop</button>
-    <button (click)="showStats('video1')">📊 Statistiken</button>
-    <button (click)="deleteVideo('video1')">🗑️ Löschen</button>
+    <button (click)="stopVideo('video-' + documentId)">⏹️ Stop</button>
+    <button (click)="showStats('video-' + documentId)">📊 Statistiken</button>
+    <button (click)="deleteVideo('video-' + documentId)">🗑️ Löschen</button>
   </div>
 
-  <div id="statusMessage1" class="status-message"></div>
-  <div id="statsPanel1" class="stats-panel" style="display: none;"></div>
-</div>
-
-<!-- Zweites Video -->
-<div class="video-container">
-  <video
-    [id]="'video-' + documentId"
-    width="640"
-    controls
-    (error)="handleError('video2')"
-    (loadedmetadata)="initializeVideo(documentId, 15)"
-  ></video>
-
-  <div class="controls">
-    <button id="playPauseBtn2" (click)="togglePlayPause('video2')">
-      ▶️ <span class="btn-text">Abspielen</span>
-    </button>
-    <button (click)="stopVideo('video2')">⏹️ Stop</button>
-    <button (click)="showStats('video2')">📊 Statistiken</button>
-    <button (click)="deleteVideo('video2')">🗑️ Löschen</button>
-  </div>
-
-  <div id="statusMessage2" class="status-message"></div>
-  <div id="statsPanel2" class="stats-panel" style="display: none;"></div>
+  <div [id]="'statusMessage' + documentId" class="status-message"></div>
+  <div [id]="'statsPanel' + documentId" class="stats-panel" style="display: none;"></div>
 </div>

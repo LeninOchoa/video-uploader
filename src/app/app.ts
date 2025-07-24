@@ -20,11 +20,15 @@ import {FormsModule} from '@angular/forms';
         Dokument-ID:
         <input type="number" [(ngModel)]="docId" />
       </label>
+      <label>
+        StartTime:
+        <input type="startTime" [(ngModel)]="start" />
+      </label>
 
       <button (click)="showPlayer = true">Video anzeigen</button>
 
       <div style="margin-top: 2rem;" *ngIf="showPlayer">
-        <app-video-player [documentId]="docId"></app-video-player>
+        <app-video-player [documentId]="docId" [startTime]="start"></app-video-player>
       </div>
     </div>
   `
@@ -32,6 +36,7 @@ import {FormsModule} from '@angular/forms';
 export class App {
   private keycloak = inject(KeycloakService);
   docId = 0;
+  start = 0;
   showPlayer = false;
   logout() {
     this.keycloak.logout();

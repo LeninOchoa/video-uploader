@@ -1,4 +1,4 @@
-﻿import { Component, inject, Input } from '@angular/core';
+﻿import { Component, inject, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -16,12 +16,21 @@ interface PlayerInstance {
   templateUrl: './video-player.component.html',
   styleUrls: ['./video-player.component.css']
 })
-export class VideoPlayerComponent {
+export class VideoPlayerComponent implements OnChanges {
   @Input() documentId!: number;
+  @Input() startTime?: number;
+
   private http = inject(HttpClient);
   private fileService = inject(FileService);
 
   private players: Record<string, PlayerInstance> = {};
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['documentId'] && this.documentId) {
+      const playerId = `video-${this.documentId}`;
+      setTimeout(() => this.initializeVideo(this.documentId, this.startTime), 0);
+    }
+  }
 
   async initializeVideo(documentId: number, startTime?: number) {
     const playerId = `video-${documentId}`;
@@ -30,8 +39,7 @@ export class VideoPlayerComponent {
 
     try {
       const response = await firstValueFrom(
-        this.fileService.getApiFileStreamDocument(documentId, startTime)
-      );
+        this.fileService.getApiFileStreamDocument(documentId,startTime));
 
       const sessionId = response?.headers.get('X-Session-Id');
       if (!sessionId) throw new Error('Keine Session-ID im Response-Header gefunden');
