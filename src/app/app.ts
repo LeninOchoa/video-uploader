@@ -1,12 +1,19 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { VideoUploadComponent } from './video-upload/video-upload.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.html',
-  styleUrl: './app.css'
+  standalone: true,
+  imports: [
+    CommonModule,
+    VideoUploadComponent
+  ],
+  template: `
+    <div style="padding: 2rem">
+      <h1>🎥 Reha.Portal Video Upload</h1>
+      <app-video-upload />
+    </div>
+  `
 })
-export class App {
-  protected readonly title = signal('video-uploader');
-}
+export class App {}
