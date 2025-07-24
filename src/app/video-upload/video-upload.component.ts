@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { FileServerApi } from '../services/file.service';
 import { HttpResponse } from '@angular/common/http';
 import {Subscription} from 'rxjs';
+import IDocument = FileServerApi.IDocument;
 
 @Component({
   selector: 'app-video-upload',
@@ -61,18 +62,22 @@ export class VideoUploadComponent {
       1, // mediaType
       now, // createdDate
       now, // updatedDate
-      null, // createdBy
+      'test', // createdBy
       null, // language
       null, // version
       null, // metaData
       null, // pageNumbers
       [{ data: this.selectedFile, fileName: this.selectedFile.name }] // fileData
     ).subscribe({
-      next: () => this.uploadStatus = '✅ Upload erfolgreich!',
+      next: () => {
+        console.log('Dokument erfolgreich hochgeladen');
+        this.uploadStatus = `✅ Upload erfolgreich!`;
+      },
       error: (err: any) => {
         console.error('Upload error:', err);
         this.uploadStatus = `❌ Fehler: ${err.error?.message || 'Unbekannter Fehler'}`;
       }
     });
+
   }
 }

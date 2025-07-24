@@ -22,7 +22,7 @@ keycloak.init({
     providers: [
       ...(appConfig.providers || []),
       { provide: KeycloakService, useValue: keycloak },
-      { provide: API_BASE_URL, useValue: 'https://app-test.rehaneo.synios.local' }
+      { provide: API_BASE_URL, useValue: 'https://app-test.rehaneo.synios.local/rehaportal' }
     ]
   }).catch(err => console.error(err));
 });
