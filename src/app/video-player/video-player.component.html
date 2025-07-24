@@ -1,49 +1,45 @@
-﻿<div class="video-player-container">
-  <!-- Erster Videoplayer -->
-  <div class="player-section">
-    <div class="player-controls">
-      <h3 class="player-title">Standard Video Player</h3>
-      <div class="control-buttons">
-        <button id="playPauseBtn1" class="control-btn" onclick="players.togglePlayPause('player1')">
-          <span class="btn-text">Pause</span>
-        </button>
-        <button id="stopBtn1" class="control-btn" onclick="players.stopVideo('player1')">Stop</button>
-        <button id="statBtn1" class="control-btn" onclick="players.showStats('player1')">Statistik</button>
-        <button id="deleteBtn1" class="control-btn delete-btn" onclick="players.deleteVideo('player1')">Löschen</button>
-      </div>
-      <div id="statsPanel1" class="stats-panel"></div>
-      <div id="statusMessage1" class="status-message"></div>
-    </div>
+﻿<!-- Erstes Video -->
+<div class="video-container">
+  <video
+    [id]="'video-' + documentId"
+    width="640"
+    controls
+    (error)="handleError('video1')"
+    (loadedmetadata)="initializeVideo(documentId)"
+  ></video>
 
-    <video id="player1" class="video-player" controls autoplay
-           src="http://192.168.10.235:5210/api/file/stream/document/1"
-           data-session-id="" data-player-id="player1"
-           onloadedmetadata="players.initializeVideo('player1')"
-           onerror="players.handleError('player1')">
-    </video>
+  <div class="controls">
+    <button id="playPauseBtn1" (click)="togglePlayPause('video1')">
+      ▶️ <span class="btn-text">Abspielen</span>
+    </button>
+    <button (click)="stopVideo('video1')">⏹️ Stop</button>
+    <button (click)="showStats('video1')">📊 Statistiken</button>
+    <button (click)="deleteVideo('video1')">🗑️ Löschen</button>
   </div>
 
-  <!-- Zweiter Videoplayer -->
-  <div class="player-section">
-    <div class="player-controls">
-      <h3 class="player-title">Video Player (Start bei 15 Sekunden)</h3>
-      <div class="control-buttons">
-        <button id="playPauseBtn2" class="control-btn" onclick="players.togglePlayPause('player2')">
-          <span class="btn-text">Pause</span>
-        </button>
-        <button id="stopBtn2" class="control-btn" onclick="players.stopVideo('player2')">Stop</button>
-        <button id="statBtn2" class="control-btn" onclick="players.showStats('player2')">Statistik</button>
-        <button id="deleteBtn2" class="control-btn delete-btn" onclick="players.deleteVideo('player2')">Löschen</button>
-      </div>
-      <div id="statsPanel2" class="stats-panel"></div>
-      <div id="statusMessage2" class="status-message"></div>
-    </div>
+  <div id="statusMessage1" class="status-message"></div>
+  <div id="statsPanel1" class="stats-panel" style="display: none;"></div>
+</div>
 
-    <video id="player2" class="video-player" controls autoplay
-           src="http://192.168.10.235:5210/api/file/stream/document/1?startSecond=15"
-           data-session-id="" data-player-id="player2" data-start-time="15"
-           onloadedmetadata="players.initializeVideo('player2')"
-           onerror="players.handleError('player2')">
-    </video>
+<!-- Zweites Video -->
+<div class="video-container">
+  <video
+    [id]="'video-' + documentId"
+    width="640"
+    controls
+    (error)="handleError('video2')"
+    (loadedmetadata)="initializeVideo(documentId, 15)"
+  ></video>
+
+  <div class="controls">
+    <button id="playPauseBtn2" (click)="togglePlayPause('video2')">
+      ▶️ <span class="btn-text">Abspielen</span>
+    </button>
+    <button (click)="stopVideo('video2')">⏹️ Stop</button>
+    <button (click)="showStats('video2')">📊 Statistiken</button>
+    <button (click)="deleteVideo('video2')">🗑️ Löschen</button>
   </div>
+
+  <div id="statusMessage2" class="status-message"></div>
+  <div id="statsPanel2" class="stats-panel" style="display: none;"></div>
 </div>
