@@ -10,9 +10,9 @@ import {OpenAPI} from './app/Api/FileServer';
 const keycloak = new KeycloakService();
 
 keycloak.init({
-  url: 'https://identity.rehaneo.synios.local',
+  url: 'https://identity26.rehaneo.synios.local:4443',
   realm: 'Rehaportal',
-  clientId: 'reha' // ← Aus Keycloak-Admin-UI bestätigen
+  clientId: 'web' // ← Aus Keycloak-Admin-UI bestätigen
 }).then(() => {
   bootstrapApplication(App, {
     ...appConfig,

@@ -1,12 +1,14 @@
-﻿import { Component, inject, Input, OnChanges, SimpleChanges } from '@angular/core';
+﻿import { Component, inject, Input, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import {FileService} from '../Api/FileServer';
+import { FileService } from '../Api/FileServer';
 
 interface PlayerInstance {
   video: HTMLVideoElement;
   sessionId: string;
+  retryCount: number;
+  maxRetries: number;
 }
 
 @Component({
@@ -16,20 +18,25 @@ interface PlayerInstance {
   templateUrl: './video-player.component.html',
   styleUrls: ['./video-player.component.css']
 })
-export class VideoPlayerComponent implements OnChanges {
+export class VideoPlayerComponent implements OnChanges, OnDestroy {
   @Input() documentId!: number;
   @Input() startTime?: number;
 
   private http = inject(HttpClient);
   private fileService = inject(FileService);
-
   private players: Record<string, PlayerInstance> = {};
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['documentId'] && this.documentId) {
-      const playerId = `video-${this.documentId}`;
       setTimeout(() => this.initializeVideo(this.documentId, this.startTime), 0);
     }
+  }
+
+  ngOnDestroy(): void {
+    // Clean up all active streams when component is destroyed
+    Object.keys(this.players).forEach(playerId => {
+      this.stopVideo(playerId).catch(console.error);
+    });
   }
 
   async initializeVideo(documentId: number, startTime?: number) {
@@ -38,26 +45,92 @@ export class VideoPlayerComponent implements OnChanges {
     if (!video) return;
 
     try {
+      // Initialize player instance with retry logic
+      this.players[playerId] = {
+        video,
+        sessionId: '',
+        retryCount: 0,
+        maxRetries: 3
+      };
+
+      await this.startStream(playerId, documentId, startTime);
+
+      // Add error event listener for handling stream errors
+      video.addEventListener('error', () => this.handleVideoError(playerId));
+
+      // Add ended event listener
+      video.addEventListener('ended', () => this.handleVideoEnded(playerId));
+
+    } catch (err: any) {
+      this.showStatus(playerId, `Fehler bei der Initialisierung: ${err.message}`, true);
+    }
+  }
+
+  private async startStream(playerId: string, documentId: number, startTime?: number) {
+    const instance = this.players[playerId];
+    if (!instance) return;
+
+    try {
       const response = await firstValueFrom(
-        this.fileService.getApiFileStreamDocument(documentId,startTime));
+        this.fileService.getApiFileStreamDocument(documentId, startTime)
+      );
 
       const sessionId = response?.headers.get('X-Session-Id');
       if (!sessionId) throw new Error('Keine Session-ID im Response-Header gefunden');
 
       const objectUrl = URL.createObjectURL(response.body!);
-      video.src = objectUrl;
-      await video.load();
-
-      this.players[playerId] = { video, sessionId };
+      instance.video.src = objectUrl;
+      instance.sessionId = sessionId;
+      await instance.video.load();
 
       if (startTime) {
-        video.currentTime = startTime;
+        instance.video.currentTime = startTime;
       }
 
       this.showStatus(playerId, `Video initialisiert, Session-ID: ${sessionId}`);
-    } catch (err: any) {
-      this.showStatus(playerId, `Fehler bei der Initialisierung: ${err.message}`, true);
+    } catch (err) {
+      await this.handleStreamError(playerId, err);
     }
+  }
+
+  private async handleStreamError(playerId: string, error: any) {
+    const instance = this.players[playerId];
+    if (!instance) return;
+
+    if (instance.retryCount < instance.maxRetries) {
+      instance.retryCount++;
+      this.showStatus(playerId, `Verbindung wird wiederhergestellt... Versuch ${instance.retryCount}`, true);
+
+      // Wait before retrying
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Retry stream
+      await this.startStream(playerId, Number(playerId.split('-')[1]), instance.video.currentTime);
+    } else {
+      this.showStatus(playerId, `Stream konnte nicht wiederhergestellt werden: ${error.message}`, true);
+    }
+  }
+
+  private async handleVideoError(playerId: string) {
+    const instance = this.players[playerId];
+    if (!instance) return;
+
+    const error = instance.video.error;
+    console.error('Video error:', error);
+
+    if (error?.code === MediaError.MEDIA_ERR_NETWORK) {
+      await this.handleStreamError(playerId, new Error('Netzwerkfehler'));
+    } else {
+      this.showStatus(playerId, `Videofehler: ${error?.message || 'Unbekannter Fehler'}`, true);
+    }
+  }
+
+  protected handleVideoEnded(playerId: string) {
+    const instance = this.players[playerId];
+    if (!instance) return;
+
+    this.showStatus(playerId, 'Video beendet');
+    this.stopVideo(playerId).catch(console.error);
   }
 
   async togglePlayPause(playerId: string) {
