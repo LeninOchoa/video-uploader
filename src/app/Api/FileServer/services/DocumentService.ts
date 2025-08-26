@@ -5,9 +5,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import type { Observable } from 'rxjs';
-import type { DocumentDto } from '../models/DocumentDto';
 import type { IDocument } from '../models/IDocument';
 import type { TransferDto } from '../models/TransferDto';
+import type { UpdateTransferDto } from '../models/UpdateTransferDto';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 @Injectable({
@@ -97,7 +97,7 @@ export class DocumentService {
      * @throws ApiError
      */
     public putApiDocument(
-        requestBody: DocumentDto,
+        requestBody: UpdateTransferDto,
     ): Observable<any> {
         return __request(OpenAPI, this.http, {
             method: 'PUT',

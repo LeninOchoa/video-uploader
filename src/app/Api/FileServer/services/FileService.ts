@@ -5,6 +5,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import type { Observable } from 'rxjs';
+import type { Void } from '../models/Void';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 @Injectable({
@@ -134,12 +135,12 @@ export class FileService {
     }
     /**
      * @param sessionId
-     * @returns any OK
+     * @returns Void OK
      * @throws ApiError
      */
     public postApiFileStreamPause(
         sessionId: string,
-    ): Observable<any> {
+    ): Observable<Void> {
         return __request(OpenAPI, this.http, {
             method: 'POST',
             url: '/api/file/stream/{sessionId}/pause',
@@ -150,12 +151,12 @@ export class FileService {
     }
     /**
      * @param sessionId
-     * @returns any OK
+     * @returns Void OK
      * @throws ApiError
      */
     public postApiFileStreamResume(
         sessionId: string,
-    ): Observable<any> {
+    ): Observable<Void> {
         return __request(OpenAPI, this.http, {
             method: 'POST',
             url: '/api/file/stream/{sessionId}/resume',
@@ -166,12 +167,12 @@ export class FileService {
     }
     /**
      * @param sessionId
-     * @returns any OK
+     * @returns Void OK
      * @throws ApiError
      */
     public deleteApiFileStream(
         sessionId: string,
-    ): Observable<any> {
+    ): Observable<Void> {
         return __request(OpenAPI, this.http, {
             method: 'DELETE',
             url: '/api/file/stream/{sessionId}',

@@ -47,11 +47,9 @@ export class VideoUploadComponent {
 
     const formData: TransferDto = {
       classificationId: 1,
-      guid: null,
+      customId: null,
       originalName: this.selectedFile.name,
       mediaType: 2, // 2 = Document laut enum "MediaType"
-      createdDate: now.toISOString(),
-      updatedDate: now.toISOString(),
       createdBy: 'Lenin',
       language: null,
       version: null,

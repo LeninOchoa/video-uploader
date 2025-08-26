@@ -8,7 +8,6 @@ export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { ClassificationDto } from './models/ClassificationDto';
-export type { DocumentDto } from './models/DocumentDto';
 export type { DocumentTypeDto } from './models/DocumentTypeDto';
 export type { FolderDto } from './models/FolderDto';
 export type { IClassification } from './models/IClassification';
@@ -24,6 +23,8 @@ export type { PageDto } from './models/PageDto';
 export type { SettingDto } from './models/SettingDto';
 export { SettingValueType } from './models/SettingValueType';
 export type { TransferDto } from './models/TransferDto';
+export type { UpdateTransferDto } from './models/UpdateTransferDto';
+export type { Void } from './models/Void';
 
 export { ClassificationsService } from './services/ClassificationsService';
 export { DocumentService } from './services/DocumentService';

@@ -2,24 +2,19 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { IPage } from './IPage';
-export type DocumentDto = {
+import type { MediaType } from './MediaType';
+export type UpdateTransferDto = {
     id?: number;
-    documentTypeId?: number;
     classificationId?: number;
-    mediumId?: number;
     customId?: string | null;
     originalName?: string | null;
-    cdName?: string | null;
-    filePath?: string | null;
-    createdDate?: string;
-    updatedDate?: string;
+    mediaType?: MediaType;
     createdBy?: string | null;
-    isActive?: boolean;
-    isDeleted?: boolean;
     language?: string | null;
     version?: number | null;
+    mediumId?: number | null;
+    isActive?: boolean;
+    isDeleted?: boolean;
     metaData?: string | null;
-    pages?: Array<IPage> | null;
 };
 
