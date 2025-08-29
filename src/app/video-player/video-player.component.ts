@@ -72,22 +72,51 @@ export class VideoPlayerComponent implements OnChanges, OnDestroy {
 
     try {
       const response = await firstValueFrom(
-        this.fileService.getApiFileStreamDocument(documentId, startTime)
+        this.fileService.streamDocumentBinary(documentId, startTime)
       );
 
-      const sessionId = response?.headers.get('X-Session-Id');
-      if (!sessionId) throw new Error('Keine Session-ID im Response-Header gefunden');
+      const blob = response.body!;
+      if (!blob || blob.size === 0) {
+        throw new Error('Leerer Stream (Blob.size = 0)');
+      }
+
+// (A) Wenn Server versehentlich JSON/Text schickt → auslesen + melden
+      if (blob.type && (blob.type.includes('json') || blob.type.includes('text') || blob.type.includes('html'))) {
+        const text = await blob.text();
+        throw new Error(`Servertext statt Video: ${text.slice(0, 200)}…`);
+      }
+
+// (B) MP4-Signatur prüfen: muss 'ftyp' enthalten
+      const header = new Uint8Array(await blob.slice(0, 16).arrayBuffer());
+      const headerAscii = Array.from(header).map(c => String.fromCharCode(c)).join('');
+      if (!headerAscii.includes('ftyp')) {
+        throw new Error(`Kein MP4-Header gefunden (erster Chunk: ${headerAscii.replace(/[^\x20-\x7E]/g, '.')})`);
+      }
+
+// (C) Kann der Browser überhaupt den Codec?
+      const video = instance.video;
+      const canPlay = video.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"'); // H.264 Baseline + AAC
+      if (canPlay === '') {
+        this.showStatus(playerId, 'Browser kann H.264/AAC nicht abspielen', true);
+      }
+
+      // --- Session-ID Handling vorerst deaktiviert ---
+      // const sessionId = response?.headers.get('X-Session-Id');
+      // if (!sessionId) throw new Error('Keine Session-ID im Response-Header gefunden');
+      // instance.sessionId = sessionId;
+      instance.sessionId = ''; // Platzhalter
 
       const objectUrl = URL.createObjectURL(response.body!);
       instance.video.src = objectUrl;
-      instance.sessionId = sessionId;
+      //instance.sessionId = sessionId;
       await instance.video.load();
 
       if (startTime) {
         instance.video.currentTime = startTime;
       }
 
-      this.showStatus(playerId, `Video initialisiert, Session-ID: ${sessionId}`);
+      this.showStatus(playerId, `Video initialisiert (Session-ID ignoriert)`);
+      //this.showStatus(playerId, `Video initialisiert, Session-ID: ${sessionId}`);
     } catch (err) {
       await this.handleStreamError(playerId, err);
     }
@@ -226,4 +255,6 @@ export class VideoPlayerComponent implements OnChanges, OnDestroy {
   handleError(playerId: string) {
     this.showStatus(playerId, 'Fehler bei der Videowiedergabe', true);
   }
+
+
 }

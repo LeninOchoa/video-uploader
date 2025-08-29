@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {HttpClient, HttpResponse} from '@angular/common/http';
 import type { Observable } from 'rxjs';
 import type { Void } from '../models/Void';
 import { OpenAPI } from '../core/OpenAPI';
@@ -181,4 +181,27 @@ export class FileService {
             },
         });
     }
+
+  /**
+   * Custom: Stream document as binary Blob and expose raw headers.
+   * Uses HttpClient with observe:'response' and responseType:'blob' to avoid JSON parsing.
+   * @param id Document ID
+   * @param startSecond Optional start position in seconds
+   * @param sessionId Optional existing session to resume
+   */
+  public streamDocumentBinary(
+    id: number,
+    startSecond?: number,
+    sessionId?: string,
+  ): Observable<HttpResponse<Blob>> {
+    const params: any = {};
+    if (startSecond !== undefined && startSecond !== null) params.startSecond = startSecond;
+    if (sessionId) params.sessionId = sessionId;
+
+    return this.http.get(`https://app-test.rehaneo.synios.local/rehaportal/api/file/stream/document/${id}`, {
+      params,
+      observe: 'response',
+      responseType: 'blob' as const,
+    });
+  }
 }

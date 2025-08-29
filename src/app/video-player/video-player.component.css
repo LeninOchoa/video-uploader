@@ -1,40 +1,7 @@
-﻿.video-container {
-  margin: 1rem;
-  padding: 1rem;
-  border: 1px solid #ccc;
-  max-width: 700px;
-  background-color: #f9f9f9;
-}
+﻿/* video-player.component.css */
+/* (du kannst deine vorhandenen Styles wiederverwenden) */
+.video-container { margin: 1rem; padding: 1rem; border: 1px solid #ccc; max-width: 700px; background: #f9f9f9; }
+.video-player { width: 100%; max-width: 100%; border-radius: 4px; }
+.controls { margin-top: .5rem; }
+.status-message { margin-top: .5rem; font-weight: bold; }
 
-.controls {
-  margin-top: 0.5rem;
-}
-
-.controls button {
-  margin-right: 0.5rem;
-  padding: 0.4rem 1rem;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.status-message {
-  margin-top: 0.5rem;
-  font-weight: bold;
-}
-
-.status-message.success {
-  color: green;
-}
-
-.status-message.error {
-  color: red;
-}
-
-.stats-panel {
-  margin-top: 1rem;
-  font-family: monospace;
-  font-size: 13px;
-  background-color: #eee;
-  padding: 0.5rem;
-  border-radius: 4px;
-}
